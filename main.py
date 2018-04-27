@@ -10,6 +10,18 @@ import subprocess
 from lxml import html
 from twilio.rest import Client
 
+required_env_vars = [
+    'TWILIO_SID',
+    'TWILIO_TOKEN'
+]
+
+for var in required_env_vars:
+    if not var in os.environ:
+        raise Exception('Twilio API credentials missing from environment')
+
+TWILIO_SID = os.environ['TWILIO_SID']
+TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
+
 def notify(title, text):
         os.system("""
         osascript -e 'display notification "{}" with title "{}"'
@@ -18,15 +30,18 @@ def notify(title, text):
 parser = argparse.ArgumentParser(
     description="Poll a given Resident Advisor URL and notify if resale tickets are available.",
 )
-parser.add_argument('url', help="Resident Advisor event page URL")
+
+parser.add_argument('url', help='Resident Advisor event page URL')
+parser.add_argument('from_number', help='Phone number FROM which the text is sent (including country prefix)')
+parser.add_argument('to_number', help='Phone number TO which the text is sent (including country prefix)')
+parser.add_argument('-n', '--notify',
+    help='Show a system notification when tickets are available',
+    action='store_true')
+
 args = parser.parse_args()
 
-TWILIO_SID = 'TWILIO_SID'
-TWILIO_TOKEN = 'TWILIO_TOKEN'
-
-FROM_PHONE_NUMBER = '+44'
-
-PHONE_NUMBER = '+44'
+FROM_PHONE_NUMBER = args.from_number
+PHONE_NUMBER = args.to_number
 
 client = Client(TWILIO_SID, TWILIO_TOKEN)
 
@@ -40,7 +55,9 @@ while True:
 
     if len(tickets_with_resale) > 0:
         print("%s: Tickets available" % (str(datetime.datetime.now())))
-        notify("Tickets available", "")
+
+        if args.notify:
+            notify("Tickets available", "")
 
         if not text_sent:
             message = client.messages.create(
