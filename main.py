@@ -34,7 +34,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument('url', help='Resident Advisor event page URL')
 parser.add_argument('from_number', help='Phone number FROM which the text is sent (including country prefix)')
 parser.add_argument('to_number', help='Phone number TO which the text is sent (including country prefix)')
-parser.add_argument('-n', '--notify', help='Show a system notification when tickets are available', action='store_true')
+parser.add_argument('-n', '--notify',
+    help='Show a system notification when tickets are available',
+    action='store_true')
 
 args = parser.parse_args()
 
